@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: cache-mongo-redis
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/userdb}
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+cache:
+  ttl-minutes: ${CACHE_TTL_MINUTES:5}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    br.com.example.cacheredis: DEBUG

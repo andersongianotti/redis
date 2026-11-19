@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-mongo-redis
+  labels:
+    app: cache-mongo-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cache-mongo-redis
+  template:
+    metadata:
+      labels:
+        app: cache-mongo-redis
+    spec:
+      containers:
+        - name: app
+          image: image-registry.openshift-image-registry.svc:5000/default/cache-mongo-redis:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MONGODB_URI
+              value: "mongodb://mongodb:27017/userdb"
+            - name: REDIS_HOST
+              value: "redis"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: CACHE_TTL_MINUTES
+              value: "5"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cache-mongo-redis
+spec:
+  selector:
+    app: cache-mongo-redis
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: cache-mongo-redis
+spec:
+  to:
+    kind: Service
+    name: cache-mongo-redis
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cache-config
+  labels:
+    app: cache-mongo-redis
+data:
+  MONGODB_URI: "mongodb://mongodb:27017/userdb"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  CACHE_TTL_MINUTES: "5"

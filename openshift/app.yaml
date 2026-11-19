@@ -16,12 +16,15 @@ spec:
     spec:
       containers:
         - name: app
-          image: image-registry.openshift-image-registry.svc:5000/default/cache-mongo-redis:latest
+          image: image-registry.openshift-image-registry.svc:5000/anderson-gianotti-dev/cache-mongo-redis:latest
           ports:
             - containerPort: 8080
           env:
             - name: MONGODB_URI
-              value: "mongodb://mongodb:27017/userdb"
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-atlas-uri
+                  key: uri
             - name: REDIS_HOST
               value: "redis"
             - name: REDIS_PORT
@@ -74,7 +77,6 @@ metadata:
   labels:
     app: cache-mongo-redis
 data:
-  MONGODB_URI: "mongodb://mongodb:27017/userdb"
   REDIS_HOST: "redis"
   REDIS_PORT: "6379"
   CACHE_TTL_MINUTES: "5"

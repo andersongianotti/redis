@@ -34,7 +34,7 @@ jobs:
           OC_TOKEN: ${{ secrets.OC_TOKEN }}
         run: |
           echo "$OC_TOKEN" | docker login "$REGISTRY" \
-            -u "github-deployer" --password-stdin
+            -u "user" --password-stdin
 
       - name: Build and push image
         run: |

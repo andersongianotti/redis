@@ -2,6 +2,8 @@ package br.com.example.cacheredis.controller;
 
 import br.com.example.cacheredis.model.User;
 import br.com.example.cacheredis.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,9 +21,11 @@ public class UserController {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, ObjectMapper objectMapper) {
         this.userService = userService;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/users/{id}")
@@ -32,12 +36,17 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        log.info("POST /users recebido - payload: name={}, email={}, phone={}",
-                user.getName(), user.getEmail(), user.getPhone());
-        User saved = userService.create(user);
-        log.info("POST /users concluído - usuário salvo com id={}", saved.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    public ResponseEntity<User> createUser(@RequestBody String payload) {
+        log.info("POST /users recebido - payload completo: {}", payload);
+        try {
+            User user = objectMapper.readValue(payload, User.class);
+            User saved = userService.create(user);
+            log.info("POST /users concluído - usuário salvo com id={}", saved.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        } catch (JsonProcessingException e) {
+            log.warn("POST /users payload inválido: {}", payload);
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/users/{id}/cache")

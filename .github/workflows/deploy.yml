@@ -33,6 +33,8 @@ jobs:
         env:
           OC_TOKEN: ${{ secrets.OC_TOKEN }}
         run: |
+          echo "Token length: ${#OC_TOKEN}"
+          echo "Token prefix: ${OC_TOKEN:0:10}..."
           echo "$OC_TOKEN" | docker login "$REGISTRY" \
             -u "user" --password-stdin
 

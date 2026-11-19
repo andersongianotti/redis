@@ -37,16 +37,24 @@ public class UserController {
 
     @PostMapping("/users")
     public ResponseEntity<User> createUser(@RequestBody String payload) {
-        log.info("POST /users recebido - payload completo: {}", payload);
+        String safePayload = sanitize(payload);
+        log.info("POST /users recebido - payload completo: {}", safePayload);
         try {
             User user = objectMapper.readValue(payload, User.class);
             User saved = userService.create(user);
             log.info("POST /users concluído - usuário salvo com id={}", saved.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (JsonProcessingException e) {
-            log.warn("POST /users payload inválido: {}", payload);
+            log.warn("POST /users payload inválido: {}", safePayload);
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    private static String sanitize(String input) {
+        if (input == null) {
+            return "";
+        }
+        return input.replaceAll("[\\r\\n]", " ");
     }
 
     @DeleteMapping("/users/{id}/cache")

@@ -59,6 +59,12 @@ public class UserService {
         return user;
     }
 
+    public User create(User user) {
+        User saved = userRepository.save(user);
+        log.info("Usuário criado no MongoDB: {}", saved.getId());
+        return saved;
+    }
+
     private void cache(String key, User user) {
         try {
             String json = objectMapper.writeValueAsString(user);

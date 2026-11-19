@@ -1,0 +1,62 @@
+name: Build and Deploy to OpenShift
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      OC_SERVER: https://api.rm1.0a51.p1.openshiftapps.com:6443
+      OC_NAMESPACE: anderson-gianotti-dev
+      REGISTRY: default-route-openshift-image-registry.apps.rm1.0a51.p1.openshiftapps.com
+      IMAGE_NAME: ${{ github.repository }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Build with Maven
+        run: mvn -B package -DskipTests
+
+      - name: Log in to OpenShift registry
+        env:
+          OC_TOKEN: ${{ secrets.OC_TOKEN }}
+        run: |
+          echo "$OC_TOKEN" | docker login "$REGISTRY" \
+            -u "github-deployer" --password-stdin
+
+      - name: Build and push image
+        run: |
+          IMAGE="$REGISTRY/$OC_NAMESPACE/cache-mongo-redis:latest"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+
+      - name: Install oc CLI
+        run: |
+          curl -sL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz \
+            | tar xz oc
+          sudo mv oc /usr/local/bin/
+
+      - name: Deploy to OpenShift
+        env:
+          OC_TOKEN: ${{ secrets.OC_TOKEN }}
+        run: |
+          oc login --token="$OC_TOKEN" --server="$OC_SERVER"
+          oc project "$OC_NAMESPACE"
+          oc apply -f openshift/redis.yaml
+          oc apply -f openshift/app.yaml
+          oc rollout status deployment/cache-mongo-redis --timeout=5m
+
+      - name: Show route
+        run: oc get route cache-mongo-redis

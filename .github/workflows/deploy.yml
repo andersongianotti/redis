@@ -35,7 +35,18 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
 
-      - name: Trivy vulnerability scan
+      - name: Trivy vulnerability report
+        uses: aquasecurity/trivy-action@v0.33.1
+        with:
+          scan-type: 'fs'
+          version: 'v0.76.1'
+          scan-ref: '.'
+          scanners: 'vuln,secret,misconfig'
+          severity: 'CRITICAL,HIGH,MEDIUM,LOW'
+          format: 'table'
+          exit-code: '0'
+
+      - name: Trivy security gate (CRITICAL/HIGH)
         uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: 'fs'
@@ -44,7 +55,7 @@ jobs:
           scanners: 'vuln,secret,misconfig'
           severity: 'CRITICAL,HIGH'
           format: 'table'
-          exit-code: '0'
+          exit-code: '1'
 
       - name: Log in to OpenShift registry
         env:

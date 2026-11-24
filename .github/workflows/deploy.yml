@@ -39,7 +39,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.33.1
         with:
           scan-type: 'fs'
-          version: '0.76.1'
+          version: 'v0.76.1'
           scan-ref: '.'
           scanners: 'vuln,secret,misconfig'
           severity: 'CRITICAL,HIGH'

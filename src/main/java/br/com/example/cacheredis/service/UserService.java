@@ -2,8 +2,8 @@ package br.com.example.cacheredis.service;
 
 import br.com.example.cacheredis.model.User;
 import br.com.example.cacheredis.repository.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,7 +43,7 @@ public class UserService {
             log.debug("Cache HIT para {}", key);
             try {
                 return Optional.of(objectMapper.readValue(cached, User.class));
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 log.warn("Falha ao desserializar cache de {}, invalidando", key);
                 redisTemplate.delete(key);
             }
@@ -69,7 +69,7 @@ public class UserService {
         try {
             String json = objectMapper.writeValueAsString(user);
             redisTemplate.opsForValue().set(key, json, Duration.ofMinutes(ttlMinutes));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.error("Falha ao serializar usuário para cache", e);
         }
     }

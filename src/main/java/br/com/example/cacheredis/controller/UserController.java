@@ -2,8 +2,8 @@ package br.com.example.cacheredis.controller;
 
 import br.com.example.cacheredis.model.User;
 import br.com.example.cacheredis.service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -44,7 +44,7 @@ public class UserController {
             User saved = userService.create(user);
             log.info("POST /users concluído - usuário salvo com id={}", saved.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             log.warn("POST /users payload inválido: {}", safePayload);
             return ResponseEntity.badRequest().build();
         }

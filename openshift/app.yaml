@@ -14,9 +14,9 @@ spec:
       labels:
         app: cache-mongo-redis
     spec:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
         seccompProfile:
           type: RuntimeDefault
       containers:

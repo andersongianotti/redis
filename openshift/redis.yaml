@@ -14,9 +14,9 @@ spec:
       labels:
         app: redis
     spec:
+      hostUsers: false
       securityContext:
         runAsNonRoot: true
-        runAsUser: 999
         seccompProfile:
           type: RuntimeDefault
       containers:

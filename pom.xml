@@ -17,6 +17,27 @@
     <name>cache-mongo-redis</name>
     <description>Microservice com cache-aside: MongoDB como fonte, Redis como cache</description>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/andersongianotti</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/andersongianotti/redis</url>
+        </repository>
+        <snapshotRepository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/andersongianotti/redis</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <java.version>21</java.version>
         <sonar.organization>andersongianotti</sonar.organization>

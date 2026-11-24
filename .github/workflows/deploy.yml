@@ -86,7 +86,7 @@ jobs:
           oc project "$OC_NAMESPACE"
           oc apply -f openshift/redis.yaml
           oc apply -f openshift/app.yaml
-          oc rollout status deployment/cache-mongo-redis --timeout=5m
+          oc rollout status deployment/cache-mongo-redis --timeout=10m
 
       - name: Show route
         run: oc get route cache-mongo-redis

@@ -9,6 +9,10 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+
     env:
       OC_SERVER: https://api.rm1.0a51.p1.openshiftapps.com:6443
       OC_NAMESPACE: anderson-gianotti-dev
@@ -28,6 +32,24 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B package -DskipTests
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0">
+            <servers>
+              <server>
+                <id>github</id>
+                <username>${{ github.actor }}</username>
+                <password>${env.GITHUB_TOKEN}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+          mvn -B deploy -DskipTests
 
       - name: SonarCloud Scan
         env:

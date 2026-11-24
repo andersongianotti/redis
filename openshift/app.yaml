@@ -14,11 +14,21 @@ spec:
       labels:
         app: cache-mongo-redis
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: app
           image: image-registry.openshift-image-registry.svc:5000/anderson-gianotti-dev/cache-mongo-redis:latest
           ports:
             - containerPort: 8080
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           env:
             - name: MONGODB_URI
               valueFrom:
@@ -43,6 +53,12 @@ spec:
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 30
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

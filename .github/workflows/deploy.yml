@@ -90,8 +90,11 @@ jobs:
 
       - name: Build and push image
         run: |
-          IMAGE="$REGISTRY/$OC_NAMESPACE/cache-mongo-redis:latest"
-          docker build -t "$IMAGE" .
+          SHORT_SHA="${GITHUB_SHA:0:7}"
+          IMAGE="$REGISTRY/$OC_NAMESPACE/cache-mongo-redis:$SHORT_SHA"
+          docker buildx build \
+            --provenance=false --sbom=false \
+            --load -t "$IMAGE" .
           docker push "$IMAGE"
 
       - name: Install oc CLI
@@ -106,6 +109,7 @@ jobs:
         run: |
           oc login --token="$OC_TOKEN" --server="$OC_SERVER"
           oc project "$OC_NAMESPACE"
+          sed -i "s|cache-mongo-redis:latest|cache-mongo-redis:${GITHUB_SHA:0:7}|" openshift/app.yaml
           oc apply -f openshift/redis.yaml
           oc apply -f openshift/app.yaml
           oc rollout status deployment/cache-mongo-redis --timeout=10m

@@ -1,0 +1,37 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment:
+        description: Deployment para reverter
+        required: true
+        default: cache-mongo-redis
+        type: choice
+        options:
+          - cache-mongo-redis
+          - redis
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+
+    env:
+      OC_SERVER: https://api.rm1.0a51.p1.openshiftapps.com:6443
+      OC_NAMESPACE: anderson-gianotti-dev
+
+    steps:
+      - name: Install oc CLI and login to OpenShift
+        env:
+          OC_TOKEN: ${{ secrets.OC_TOKEN }}
+        run: |
+          curl -sL https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest/openshift-client-linux.tar.gz \
+            | tar xz oc
+          sudo mv oc /usr/local/bin/
+          oc login --token="$OC_TOKEN" --server="$OC_SERVER"
+          oc project "$OC_NAMESPACE"
+
+      - name: Rollback deployment
+        run: |
+          oc rollout undo deployment/${{ inputs.deployment }}
+          oc rollout status deployment/${{ inputs.deployment }} --timeout=10m

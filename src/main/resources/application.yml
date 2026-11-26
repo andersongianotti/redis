@@ -1,9 +1,9 @@
 spring:
   application:
     name: cache-mongo-redis
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/userdb}
   data:
-    mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/userdb}
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
